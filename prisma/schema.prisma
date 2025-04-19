@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Book {
+  id                   Int           @id @default(autoincrement())
+  title                String
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  isbn                 String?       @unique
+  imageUrl             String?
+  additionalAuthors    String?
+  availability         Int
+  totalCopies          Int           @default(1)
+  bibliography         String?
+  category             String?
+  classificationNumber String?
+  condition            String?       @default("Baik")
+  description          String?
+  digitalContent       String?
+  edition              String?
+  generalNotes         String?
+  language             String?
+  location             String?
+  mainAuthor           String?
+  publisher            String?
+  subject              String?
+  Transaction          Transaction[]
+
+  // 🔽 Tambahan dari CSV
+  year     Int?
+  remarks  String?
+}
+
+model Majalah {
+  id           Int      @id @default(autoincrement())
+  issn         String?
+  code         String?
+  language     String?
+  city         String?
+  year         String?
+  frequency    String?
+  type         String?
+  subject      String?
+  publisher    String?
+  edition      String?
+  volume       String?
+  availability String?
+  createdAt    DateTime @default(now())
+  title        String?
+}
+
+model Penelitian {
+  id                           Int     @id @default(autoincrement())
+  title                        String?
+  no_ddc                       String?
+  main_author                  String?
+  additional_author            String?
+  additional_author_conference String?
+  additional_author_person     String?
+  physical_description         String?
+  bibliography                 String?
+  keywords                     String?
+  language                     String?
+  publisher                    String?
+  body                         String?
+  additional_body              String?
+  digital_content              String?
+  inventory_number             String?
+  provider                     String?
+  location                     String?
+  availability                 String? @default("Tersedia")
+  createdAt                    DateTime @default(now())
+  updatedAt                    DateTime @updatedAt @default(now())
+
+  // 🔽 Tambahan dari CSV
+  notes                        String? // dari "Catatan"
+  remarks                      String? // dari "Keterangan"
+}
+
+model Staff {
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  password String
+  role     String
+  fullName String
+  email    String @unique
+}
+
+model Transaction {
+  id                 Int       @id @default(autoincrement())
+  bookId             Int
+  userId             Int
+  status             String
+  borrowDate         DateTime
+  dueDate            DateTime
+  returnDate         DateTime?
+  overdueDays        Int?
+  fine               Int?
+  qrCode             String?
+  pickupAt           DateTime?
+  returnedAt         DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  overdueEmailSentAt DateTime?
+  Book               Book      @relation(fields: [bookId], references: [id])
+  User               User      @relation(fields: [userId], references: [id])
+}
+
+model User {
+  id          Int           @id @default(autoincrement())
+  password    String
+  email       String        @unique
+  nim         String        @unique
+  address     String
+  birthDate   DateTime
+  faculty     String
+  fullName    String
+  gender      String
+  phoneNumber String
+  Transaction Transaction[]
+}

@@ -36,42 +36,41 @@ export class AuthController {
   }
 
   @Post('staff/login')
-async staffLogin(
-  @Body() staffLoginDto: StaffLoginDto,
-  @Res({ passthrough: true }) res: Response
-) {
-  console.log("Login attempt:", staffLoginDto);
+  async staffLogin(
+    @Body() staffLoginDto: StaffLoginDto,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    console.log("Login attempt:", staffLoginDto);
 
-  const staff = await this.authService.validateStaff(
-    staffLoginDto.email,
-    staffLoginDto.password
-  );
+    const staff = await this.authService.validateStaff(
+      staffLoginDto.email,
+      staffLoginDto.password
+    );
 
-  if (!staff) {
-    console.log("❌ Invalid credentials");
-    throw new UnauthorizedException('Invalid credentials');
+    if (!staff) {
+      console.log("❌ Invalid credentials");
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const payload = {
+      userId: staff.id,
+      email: staff.email,
+      role: staff.role.toLowerCase().trim(),
+    };
+
+    const token = this.jwtService.sign(payload);
+
+    res.cookie('access_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 1000 * 60 * 60 * 24,
+    });
+
+    console.log("✅ Staff login success, token set.");
+
+    return res.status(200).json({ message: 'Login staff berhasil', role: staff.role });
   }
-
-  const payload = {
-    userId: staff.id,
-    email: staff.email,
-    role: staff.role.toLowerCase().trim(),
-  };
-
-  const token = this.jwtService.sign(payload);
-
-  res.cookie('access_token', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 1000 * 60 * 60 * 24,
-  });
-
-  console.log("✅ Staff login success, token set.");
-
-  return res.status(200).json({ message: 'Login staff berhasil', role: staff.role });
-}
-
 
   @Post('logout')
   logout(@Res({ passthrough: true }) res: Response) {

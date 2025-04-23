@@ -8,10 +8,9 @@ async function bootstrap() {
   console.log('DATABASE_URL:', process.env.DATABASE_URL);
 
   app.enableCors({
-    origin: 'http://localhost:3000',
+    origin: 'https://perpustakaan-unsrat.vercel.app/',
     credentials: true,
   });
-
   app.use(cookieParser());
 
   await app.listen(4000);

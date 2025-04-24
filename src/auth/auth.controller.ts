@@ -6,6 +6,7 @@ import { StaffLoginDto } from './dto/staff-login.dto';
 import { CreateStaffDto } from './dto/create-staff.dto';
 import { Response, Request } from 'express';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { JwtPayload } from './interfaces/jwt-payload.interface'; // Create this interface if it doesn't exist
 
 @Controller('auth')
 export class AuthController {
@@ -79,21 +80,21 @@ export class AuthController {
   }
 
   @Get('me')
-@UseGuards(JwtAuthGuard)
-getMe(@Req() req: Request) {
-  const user = req['user']; // payload dari JWT
+  @UseGuards(JwtAuthGuard)
+  getMe(@Req() req: Request) {
+    const user = req['user'] as JwtPayload; // Explicitly cast to JwtPayload
 
-  // Deteksi apakah ini login staff (punya role) atau user biasa
-  const isStaff = !!user.role;
+    // Deteksi apakah ini login staff (punya role) atau user biasa
+    const isStaff = !!user.role;
 
-  return {
-    id: user.userId, // Ini sebenarnya staff.id, kamu bisa ganti jadi 'staffId' kalau mau lebih rapi
-    email: user.email,
-    role: isStaff ? user.role : undefined,
-    type: isStaff ? "staff" : "user", // untuk membantu frontend ngeroute
-  };
-}
-
+    return {
+      id: isStaff ? undefined : user.userId, // userId for regular users
+      staffId: isStaff ? user.userId : undefined, // staffId for staff members
+      email: user.email,
+      role: isStaff ? user.role : undefined,
+      type: isStaff ? "staff" : "user", // untuk membantu frontend ngeroute
+    };
+  }
 
   @Post('register-staff')
   async registerStaff(@Body() createStaffDto: CreateStaffDto) {

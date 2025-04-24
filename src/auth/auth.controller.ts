@@ -28,10 +28,11 @@ export class AuthController {
 
     res.cookie('access_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: true,
+      sameSite: 'none',
       maxAge: 1000 * 60 * 60 * 24,
     });
+    
 
     return { message: 'Login berhasil' };
   }
@@ -63,10 +64,11 @@ export class AuthController {
 
     res.cookie('access_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: true,
+      sameSite: 'none',
       maxAge: 1000 * 60 * 60 * 24,
     });
+    
 
     console.log("✅ Staff login success, token set.");
 

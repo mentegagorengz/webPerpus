@@ -76,10 +76,15 @@ export class AuthController {
   }
 
   @Post('logout')
-  logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('access_token');
-    return { message: 'Logout berhasil' };
-  }
+logout(@Res({ passthrough: true }) res: Response) {
+  res.clearCookie('access_token', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none',
+  });
+  return { message: 'Logout berhasil' };
+}
+
 
   @Get('me')
   @UseGuards(JwtAuthGuard)

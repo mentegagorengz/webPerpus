@@ -79,10 +79,21 @@ export class AuthController {
   }
 
   @Get('me')
-  @UseGuards(JwtAuthGuard)
-  getMe(@Req() req: Request) {
-    return req['user'];
-  }
+@UseGuards(JwtAuthGuard)
+getMe(@Req() req: Request) {
+  const user = req['user']; // payload dari JWT
+
+  // Deteksi apakah ini login staff (punya role) atau user biasa
+  const isStaff = !!user.role;
+
+  return {
+    id: user.userId, // Ini sebenarnya staff.id, kamu bisa ganti jadi 'staffId' kalau mau lebih rapi
+    email: user.email,
+    role: isStaff ? user.role : undefined,
+    type: isStaff ? "staff" : "user", // untuk membantu frontend ngeroute
+  };
+}
+
 
   @Post('register-staff')
   async registerStaff(@Body() createStaffDto: CreateStaffDto) {

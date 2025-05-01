@@ -26,10 +26,12 @@ export class AuthController {
     const payload = { userId: user.id, email: user.email, role: 'user' };
     const token = this.jwtService.sign(payload);
 
+    const isProduction = process.env.NODE_ENV === 'production';
+
     res.cookie('access_token', token, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'none',
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
       maxAge: 1000 * 60 * 60 * 24,
     });
     
@@ -62,10 +64,12 @@ export class AuthController {
 
     const token = this.jwtService.sign(payload);
 
+    const isProduction = process.env.NODE_ENV === 'production';
+
     res.cookie('access_token', token, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'none',
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
       maxAge: 1000 * 60 * 60 * 24,
     });
 
@@ -81,10 +85,12 @@ export class AuthController {
 
   @Post('logout')
   logout(@Res({ passthrough: true }) res: Response) {
+    const isProduction = process.env.NODE_ENV === 'production';
+
     res.clearCookie('access_token', {
       httpOnly: true,
-      secure: true,
-      sameSite: 'none',
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
     });
     return { message: 'Logout berhasil' };
   }

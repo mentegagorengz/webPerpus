@@ -7,14 +7,30 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
-  const databaseUrl = configService.get<string>('databaseUrl');
-  const frontendOrigin = configService.get<string>('frontendUrl'); // Ambil dari .env
+  const databaseUrl = configService.get<string>('DATABASE_URL');
+  const frontendEnv = configService.get<string>('FRONTEND_URL'); // dari .env
+
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'https://perpustakaan-unsrat.vercel.app',
+  ];
+
+  // Tambahkan dari .env jika ada dan belum masuk array
+  if (frontendEnv && !allowedOrigins.includes(frontendEnv)) {
+    allowedOrigins.push(frontendEnv);
+  }
 
   console.log('✅ DATABASE_URL:', databaseUrl);
-  console.log('✅ FRONTEND_URL:', frontendOrigin);
+  console.log('✅ FRONTEND_URLS (CORS):', allowedOrigins);
 
   app.enableCors({
-    origin: frontendOrigin, // fleksibel: bisa beda di dev dan prod
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('CORS Not Allowed'));
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -26,8 +42,6 @@ async function bootstrap() {
   console.log('🚀 Backend ready at http://localhost:4000');
 }
 bootstrap();
-
-
 
 
 // import { NestFactory } from '@nestjs/core';

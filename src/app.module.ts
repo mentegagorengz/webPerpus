@@ -1,4 +1,7 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config'; // ✅
+import config from './config'; // ambil config dinamis (dev/prod)
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -8,13 +11,15 @@ import { TransactionModule } from './transaction/transaction.module';
 import { PenelitianModule } from './penelitian/penelitian.module';
 import { MajalahModule } from './majalah/majalah.module';
 import { EmailModule } from './email/email.module';
-import { TransactionController } from './transaction/transaction.controller';
-import { ConfigModule } from '@nestjs/config'; // ✅ Tambahkan ini
 import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }), // ✅ Tambahkan ini
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [config], // 💡 gunakan dynamic config
+      envFilePath: `.env.${process.env.NODE_ENV || 'development'}`, // 📁 baca env otomatis
+    }),
     AuthModule,
     UsersModule,
     BookModule,
@@ -24,7 +29,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     EmailModule,
     DashboardModule,
   ],
-  controllers: [AppController, TransactionController],
+  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}

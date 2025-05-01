@@ -23,18 +23,18 @@ export class BooksService {
   async importFromCSV(buffer: Buffer) {
     const results = [];
     const stream = Readable.from(buffer.toString());
-
+  
     return new Promise((resolve, reject) => {
       stream
         .pipe(csvParser())
         .on('data', (data) => results.push(data))
         .on('end', async () => {
           const books = results.map((item) => ({
-            title: item['Judul'] || '',
+            title: item['Judul']?.trim() || '',
             isbn: item['ISBN'] !== '-' ? item['ISBN'] : null,
             classificationNumber: item['No. Klasifikasi'] || null,
             category: item['Golongan'] || null,
-            mainAuthor: item['Pengarang Utama'] !== '-' ? item['Pengarang Utama'] : null,
+            mainAuthor: item['Pengarang Utama'] !== '-' ? item['Pengarang Utama']?.trim() : null,
             additionalAuthors: item['Pengarang Tambahan'] !== '-' ? item['Pengarang Tambahan'] : null,
             subject: item['Subyek'] || null,
             edition: item['Edisi'] || null,
@@ -49,17 +49,38 @@ export class BooksService {
             availability: item['Availability'] ? parseInt(item['Availability']) : 1,
             totalCopies: item['Total Copies'] ? parseInt(item['Total Copies']) : 1,
           }));
-
+  
+          // Filter manual agar tidak ada yang sama berdasarkan title + mainAuthor
+          const filteredBooks = [];
+          for (const book of books) {
+            const exists = await this.prisma.book.findFirst({
+              where: {
+                title: book.title,
+                mainAuthor: book.mainAuthor,
+              },
+            });
+  
+            if (!exists) {
+              filteredBooks.push(book);
+            }
+          }
+  
+          // Masukkan hanya yang belum ada
           await this.prisma.book.createMany({
-            data: books,
-            skipDuplicates: true,
+            data: filteredBooks,
           });
-
-          resolve({ message: 'Import berhasil', jumlah: books.length });
+  
+          resolve({
+            message: `Import berhasil`,
+            totalDibaca: books.length,
+            totalDisimpan: filteredBooks.length,
+            totalDuplikat: books.length - filteredBooks.length,
+          });
         })
         .on('error', reject);
     });
   }
+  
 
   async findAll(search?: string, page?: number | null, limit?: number | null) {
     const where: Prisma.BookWhereInput = search?.trim()

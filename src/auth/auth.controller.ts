@@ -68,22 +68,26 @@ export class AuthController {
       sameSite: 'none',
       maxAge: 1000 * 60 * 60 * 24,
     });
-    
 
     console.log("✅ Staff login success, token set.");
 
-    return res.status(200).json({ message: 'Login staff berhasil', role: staff.role });
+    // ✅ HANYA return object biasa
+    return {
+      message: 'Login staff berhasil',
+      role: staff.role,
+    };
   }
 
+
   @Post('logout')
-logout(@Res({ passthrough: true }) res: Response) {
-  res.clearCookie('access_token', {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'none',
-  });
-  return { message: 'Logout berhasil' };
-}
+  logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+    });
+    return { message: 'Logout berhasil' };
+  }
 
 
   @Get('me')
